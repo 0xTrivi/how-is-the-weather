@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import requests
 import api_config
+import datetime
+import pytz
 API_KEY=api_config.api_key 
 URL=api_config.url
 
@@ -163,6 +165,44 @@ def get_weather_today(data):
     print(TRANSLATIONS["today_humidity"].format(humidity))
 
 
+def transform_ts_to_local_time(timestamp):
+    """
+    Converts the provided timestamp to local time in the 'Europe/Madrid' timezone.
+    
+    Args:
+        timestamp (int): The timestamp to be converted to local time.
+
+    Returns:
+        str: A string representing the local time in the format 'HH:MM'.
+    """
+    ts_to_local_date_utc = datetime.datetime.fromtimestamp(timestamp, tz=pytz.utc)
+    time_zone = pytz.timezone('Europe/Madrid')
+    local_date_hour = ts_to_local_date_utc.astimezone(time_zone)
+    hour_local = local_date_hour.strftime('%H:%M')
+
+    return hour_local
+
+def get_data_sun(data):
+    """
+    Retrieves sunrise and sunset timestamps from the provided data 
+    dictionary and converts them to local time using the 'transform_ts_to_local_time'.
+
+    Args:
+        data (dict):A dictionary containing the weather data for the 
+        specified city.
+
+    Returns:
+        None
+    """
+    ts_sunrise = data["sys"]["sunrise"]
+    ts_sunset = data["sys"]["sunset"]
+
+    sunrise_hour = transform_ts_to_local_time(ts_sunrise)
+    sunset_hour = transform_ts_to_local_time(ts_sunset)
+
+    print(TRANSLATIONS["sun"].format(sunrise_hour, sunset_hour)) 
+
+
 def menu():
     """
     This function displays a menu to the user and allows them to select 
@@ -189,7 +229,7 @@ def menu():
         elif option == 1: # Get today's weather
             get_weather_today(data)
         elif option == 2:  # TODO
-            print("")
+            get_data_sun(data)
         elif option == 3: # Change city
             data=get_data(LANGUAGE)
 
