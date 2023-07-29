@@ -106,20 +106,37 @@ def select_city():
             print(TRANSLATIONS["error"])
 
 
-def get_data(LANGUAGE):
+def transform_ts_to_local_time(timestamp):
     """
-    This function prompts the user to enter the name of the city 
-    to be queried. It builds a URL with the provided city, API key,
-    and language, and makes a request to the OpenWeatherMap API 
-    to get weather data for the specified city.
-
+    Converts the provided timestamp to local time in the 'Europe/Madrid' timezone.
+    
     Args:
-        LANGUAGE (str): The language code for the desired language 
-        of the weather data.
+        timestamp (int): The timestamp to be converted to local time.
 
     Returns:
-        data (dict): A dictionary containing the weather data for
-        the specified city.
+        str: A string representing the local time in the format 'HH:MM'.
+    """
+    ts_to_local_date_utc = datetime.datetime.fromtimestamp(timestamp, tz=pytz.utc)
+    time_zone = pytz.timezone('Europe/Madrid')
+    local_date_hour = ts_to_local_date_utc.astimezone(time_zone)
+    hour_local = local_date_hour.strftime('%H:%M')
+
+    return hour_local
+
+
+def get_data(LANGUAGE):
+    """
+    This function prompts the user to enter the name of a city through 
+    'select_city()' function, and then makes a request to the OpenWeatherMap API 
+    to fetch the weather forecast for the specified city.
+    The weather data is returned as a dictionary.
+
+    Args:
+        LANGUAGE (str): Code of the selected language.
+
+    Returns:
+        data (dict): A dictionary containing weather forecast data for 
+        the selected city.
     """
     while True:
         city=select_city()
@@ -138,49 +155,50 @@ def get_data(LANGUAGE):
 
 def get_weather_today(data):
     """
-    This function takes weather data as input and prints the current 
-    weather information for today, including the weather description, 
-    temperature (current, minimum, and maximum), and humidity for the 
-    specified city.
+    The function extracts the current weather data for today from the 'data' dictionary,
 
     Args:
-        data (dict): A dictionary containing the weather data for the 
-        specified city.
+        data (dict): A dictionary containing weather forecast data
 
     Returns:
         None
     """
-    weather = data["weather"][0]["description"]
-    temp_min = data["main"]["temp_min"]
-    temp = data["main"]["temp"]
-    temp_max = data["main"]["temp_max"]
-    humidity = data["main"]["humidity"]
-    city = data["name"]
-
-    print(TRANSLATIONS["today_head"].format(city))
-    print(TRANSLATIONS["today_weather"].format(weather))
-    print(TRANSLATIONS["today_temp"].format(temp))
-    print(TRANSLATIONS["today_min"].format(temp_min))
-    print(TRANSLATIONS["today_max"].format(temp_max))
-    print(TRANSLATIONS["today_humidity"].format(humidity))
-
-
-def transform_ts_to_local_time(timestamp):
-    """
-    Converts the provided timestamp to local time in the 'Europe/Madrid' timezone.
+    now_data = data["list"][0]
     
+    weather = now_data["weather"][0]["description"]
+    temp = now_data["main"]["temp"]
+    humidity = now_data["main"]["humidity"]
+    city = data["city"]["name"]
+    print("")
+    print(TRANSLATIONS["now_head"].format(city))
+    print(TRANSLATIONS["weather"].format(weather))
+    print(TRANSLATIONS["temp"].format(temp))
+    print(TRANSLATIONS["humidity"].format(humidity))
+
+
+def get_forescat(data):
+    """
+    This function extracts weather forecasts for multiple hours of the next 5 days.
+
     Args:
-        timestamp (int): The timestamp to be converted to local time.
+        data (dict): A dictionary containing weather forecast data
 
     Returns:
-        str: A string representing the local time in the format 'HH:MM'.
+        None
     """
-    ts_to_local_date_utc = datetime.datetime.fromtimestamp(timestamp, tz=pytz.utc)
-    time_zone = pytz.timezone('Europe/Madrid')
-    local_date_hour = ts_to_local_date_utc.astimezone(time_zone)
-    hour_local = local_date_hour.strftime('%H:%M')
+    forescat_days = data["list"]  
+    print("")
+    for forecast in forescat_days:
+        date = forecast["dt_txt"]
+        weather = forecast["weather"][0]["description"]
+        humidity = forecast["main"]["humidity"]
+        temp = forecast["main"]["temp"]
+        print("")
+        print(TRANSLATIONS["date"].format(date))
+        print(TRANSLATIONS["weather"].format(weather))
+        print(TRANSLATIONS["temp"].format(temp))
+        print(TRANSLATIONS["humidity"].format(humidity))
 
-    return hour_local
 
 def get_data_sun(data):
     """
@@ -194,12 +212,12 @@ def get_data_sun(data):
     Returns:
         None
     """
-    ts_sunrise = data["sys"]["sunrise"]
-    ts_sunset = data["sys"]["sunset"]
+    ts_sunrise = data["city"]["sunrise"]
+    ts_sunset = data["city"]["sunset"]
 
     sunrise_hour = transform_ts_to_local_time(ts_sunrise)
     sunset_hour = transform_ts_to_local_time(ts_sunset)
-
+    print("")
     print(TRANSLATIONS["sun"].format(sunrise_hour, sunset_hour)) 
 
 
@@ -223,14 +241,17 @@ def menu():
         print(TRANSLATIONS["menu_2"])
         print(TRANSLATIONS["menu_3"])
         print(TRANSLATIONS["menu_4"])
-        option = get_and_validate_option(4)
-        if option == 4: # Exit
+        print(TRANSLATIONS["menu_5"])
+        option = get_and_validate_option(5)
+        if option == 5: # Exit
             break
-        elif option == 1: # Get today's weather
+        elif option == 1: # Get the current weather
             get_weather_today(data)
-        elif option == 2:  # TODO
+        elif option == 2:  # Display the sunrise and sunset time for today
             get_data_sun(data)
-        elif option == 3: # Change city
+        elif option == 3: # Show the forecast for the next 5 days
+            get_forescat(data)
+        elif option == 4: # Change the city
             data=get_data(LANGUAGE)
 
 
