@@ -34,7 +34,7 @@ pip install requests
 
 📚 **pytz**
 
-"To manage time zones. To install it:"
+To manage time zones. To install it:
 
 ```
 pip install pytz
