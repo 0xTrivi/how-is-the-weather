@@ -141,7 +141,7 @@ language_select = get_and_validate_option(3)
 <a name="license"></a>
 ## 7 - License 📄
 
-This project is under the GNU General Public License v3.0: [LICENSE.md](LICENSE.md)
+This project is under the GNU General Public License v3.0: [LICENSE](LICENSE)
 
 ---
 Happy coding ❤️
