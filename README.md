@@ -22,6 +22,13 @@ Follow these instructions to run the program smoothly on your computer
 <a name="prerequisites"></a>
 ### 1.1 - Prerequisites  📋
 
+🐍 **Python**
+
+Python is the programming language with which the entire application is built.
+
+You can download Python from its official website: https://www.python.org/downloads/
+
+For the proper functioning of this program, you need to have some additional Python libraries installed:
 For the proper functioning of this program, you need to have some additional Python libraries installed:
 
 📚 **request**
